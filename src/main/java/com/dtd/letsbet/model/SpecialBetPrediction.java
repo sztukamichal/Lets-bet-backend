@@ -1,9 +1,15 @@
 package com.dtd.letsbet.model;
 
-public class SpecialBetPrediction extends Prediction {
+import java.util.Date;
 
+public class SpecialBetPrediction {
+
+	PredictionStatus predictionStatus;
 	SpecialBet specialBet;
-	Player predictor;
+	Player player;
+	private int ID;
 	private String chosenOption;
+	private Date updateDate;
+	private int gainedPoints;
 
 }

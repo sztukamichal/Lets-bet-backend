@@ -5,8 +5,8 @@ import java.util.*;
 public class SpecialBet extends Bet {
 
 	GameplayTemplate gameplayTemplate;
-	SpecialBetPrediction specialBetPrediction;
-	private Collection<String> options;
+	List<SpecialBetPrediction> specialBetPredictions;
+	private List<String> options;
 	private String correctOption;
 	private int pointsToGain;
 

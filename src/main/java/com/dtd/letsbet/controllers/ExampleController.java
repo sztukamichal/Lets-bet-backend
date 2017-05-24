@@ -5,15 +5,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Created by Michał on 18.05.2017.
+ * Created by Michal on 18.05.2017.
  */
+
 @RestController
 @RequestMapping("/example")
 public class ExampleController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String getGreeting() {
-        return "Hello";
+        return "Hello world!";
     }
 
 }

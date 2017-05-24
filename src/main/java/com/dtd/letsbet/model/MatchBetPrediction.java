@@ -1,10 +1,15 @@
 package com.dtd.letsbet.model;
 
-public class MatchBetPrediction extends Prediction {
+import java.util.Date;
 
+public class MatchBetPrediction {
+
+	Result predictedResult;
+	PredictionStatus predictionStatus;
 	MatchBet matchBet;
-	Player predictor;
+	Player player;
+	private int ID;
 	private int gainedPoints;
-	private PartialResult predictedResult;
+	private Date updateDate;
 
 }

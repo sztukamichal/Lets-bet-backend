@@ -4,12 +4,14 @@ import java.util.*;
 
 public class ChangeConfigurationRequest {
 
+	ChangeConfigurationRequestStatus changeConfigurationRequestStatus;
 	GameplayConfiguration proposedConfiguration;
-	Player requester;
-	Collection<Player> decliners;
-	Collection<Player> accepters;
+	Player creator;
+	List<Account> decliners;
+	List<Account> accepters;
+	Gameplay gameplay;
+	private int ID;
 	private String reason;
-	private RequestStatus status;
 
 	public void acceptChangeRequest() {
 		// TODO - implement ChangeConfigurationRequest.acceptChangeRequest

@@ -1,10 +1,11 @@
 package com.dtd.letsbet.model;
 
-public enum GameplayStatus {
-	NEW,
-	PENDING,
-	VOTING,
-	IN_PLAY,
-	FINISHED,
-	CANCELED
+import java.util.*;
+
+public class GameplayStatus {
+
+	List<Gameplay> gameplay;
+	private int ID;
+	private String name;
+
 }

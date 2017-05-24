@@ -1,7 +1,11 @@
 package com.dtd.letsbet.model;
 
-public enum RequestStatus {
-	ACCEPTED,
-	DECLINED,
-	NEW
+import java.util.*;
+
+public class RequestStatus {
+
+	List<RequestForGameplay> requestForGameplay;
+	private int ID;
+	private String name;
+
 }

@@ -2,10 +2,12 @@ package com.dtd.letsbet.model;
 
 public class Result {
 
+	PartialResult finalResult;
+	PartialResult halfTime;
+	PartialResult extraTime;
+	PartialResult penaltyShootout;
+	MatchBetPrediction matchBetPrediction;
 	Match match;
-	private PartialResult finalResult;
-	private PartialResult halfTime;
-	private PartialResult extraTime;
-	private PartialResult penaltyShootout;
+	private int ID;
 
 }

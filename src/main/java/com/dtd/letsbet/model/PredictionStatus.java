@@ -1,10 +1,12 @@
 package com.dtd.letsbet.model;
 
-public enum PredictionStatus {
-	NEW	,
-	IN_PLAY,
-	WON,
-	CANCELED,
-	MISSED,
-	LOST
+import java.util.*;
+
+public class PredictionStatus {
+
+	List<SpecialBetPrediction> specialBetPrediction;
+	List<MatchBetPrediction> matchBetPrediction;
+	private int ID;
+	private String name;
+
 }

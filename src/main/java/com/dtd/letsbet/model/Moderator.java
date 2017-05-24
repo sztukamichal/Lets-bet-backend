@@ -1,12 +1,12 @@
 package com.dtd.letsbet.model;
 
-import java.util.Date;
+import java.util.*;
 
 public class Moderator extends Player {
 
-	GameplayTemplate gameplayTemplate;
-	BoardPost post;
-	private Date createdDate;
+	List<GameplayTemplate> createdGameplayTemplates;
+	List<BoardPost> boardPosts;
+	private Date moderatorCreatedDate;
 
 	public void createGameplayTemplate() {
 		// TODO - implement Moderator.createGameplayTemplate

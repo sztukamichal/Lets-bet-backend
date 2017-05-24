@@ -5,17 +5,20 @@ import java.util.*;
 /**
  * Competition created by player (becomes a organizer) involving other player's as participants. Consists of set of phases. Defined by rules.
  */
-public class Gameplay extends GameplayTemplate {
+public class Gameplay {
 
 	Player organizer;
-	GameplayInvitation invitation;
-	RequestForGameplay request;
-	Collection<Position> position;
+	List<GameplayInvitation> gameplayInvitations;
+	List<RequestForGameplay> requestsForGameplay;
+	List<ChangeConfigurationRequest> changeRequests;
+	GameplayStatus gameplayStatus;
+	List<Position> positions;
 	Shoutbox shoutbox;
 	GameplayConfiguration gameplayConfiguration;
+	GameplayTemplate gameplayTemplate;
+	private int ID;
 	private String name;
 	private String description;
-	private GameplayStatus status;
 	private Date startDate;
 
 	public void invitePlayer() {

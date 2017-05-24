@@ -4,11 +4,12 @@ import java.util.*;
 
 public class Team {
 
-	Match match;
-	Competition competition;
-	Collection<Footballer> footballers;
-	Standing standing;
-	private int id;
+	List<Competition> competitions;
+	List<TeamMatch> teamMatch;
+	List<Standing> standings;
+	List<Footballer> footballers;
+	private int ID;
+	private int externalId;
 	private String name;
 	private String code;
 	private String shortName;

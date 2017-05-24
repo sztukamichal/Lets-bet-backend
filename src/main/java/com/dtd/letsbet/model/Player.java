@@ -7,21 +7,20 @@ import java.util.*;
  */
 public class Player extends Account {
 
-	Collection<Position> position;
-	Player player;
-	ChangeConfigurationRequest changeConfigurationRequest;
-	SpecialBetPrediction specialBetPrediction;
-	MatchBetPrediction matchBetPrediction;
-	Invitation invitation;
-	Collection<Notification> notifications;
-	Post post;
-	Collection<Player> friends;
-	Gameplay gameplay;
-	RequestForGameplay request;
+	List<Position> positions;
+	List<Friends> friends;
+	List<ChangeConfigurationRequest> createdChangeConfigurationRequest;
+	List<SpecialBetPrediction> specialBetPredictions;
+	List<MatchBetPrediction> matchBetPredictions;
+	List<Invitation> receivedInvitations;
+	List<Notification> notifications;
+	List<Post> posts;
+	List<Gameplay> createdGameplays;
+	List<Invitation> sentInvitation;
+	List<RequestForGameplay> requestsForGameplays;
+	PlayerStatus playerStatus;
 	private int points;
-	private PlayerStatus status;
 	private int avatarId;
-	private AccountType accountType;
 	private String screenName;
 	private int tokens;
 

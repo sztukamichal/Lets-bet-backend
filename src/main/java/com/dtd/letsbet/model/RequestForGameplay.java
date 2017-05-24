@@ -5,9 +5,10 @@ import java.util.Date;
 public class RequestForGameplay {
 
 	Player requester;
+	RequestStatus requestStatus;
 	Gameplay gameplay;
+	private int ID;
 	private String message;
-	private RequestStatus status;
 	private Date createdDate;
 	private Date resolvedDate;
 

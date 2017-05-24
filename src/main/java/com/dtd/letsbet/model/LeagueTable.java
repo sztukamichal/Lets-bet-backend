@@ -4,8 +4,9 @@ import java.util.*;
 
 public class LeagueTable {
 
+	List<Standing> standings;
 	Competition competition;
-	Collection<Standing> standing;
+	private int ID;
 	private String leagueCaption;
 	private int matchDay;
 

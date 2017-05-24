@@ -1,6 +1,11 @@
 package com.dtd.letsbet.model;
 
-public enum AccountType {
-	PREMIUM,
-	STANDARD
+import java.util.*;
+
+public class AccountType {
+
+	List<Account> account;
+	private int ID;
+	private String name;
+
 }

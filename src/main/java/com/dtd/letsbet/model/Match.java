@@ -5,17 +5,17 @@ import java.util.*;
 public class Match {
 
 	Competition competition;
-	MatchBet matchBet;
-	Collection<Team> teams;
+	List<MatchBet> matchBets;
 	Result result;
-	private int id;
-	private int competitionId;
-	private String date;
+	MatchStatus matchStatus;
+	List<TeamMatch> teamMatch;
+	private int ID;
+	private int externalId;
+	private Date date;
 	private int matchday;
 	private String homeTeamName;
-	private int homeTeamId;
+	private int externalHomeTeamId;
 	private String awayTeamName;
-	private int awayTeamId;
-	private MatchStatus status;
+	private int externalAwayTeamId;
 
 }

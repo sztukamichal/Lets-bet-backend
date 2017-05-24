@@ -1,16 +1,22 @@
 package com.dtd.letsbet.model;
 
-import java.util.Date;
+import java.util.*;
 
 public abstract class Account {
 
-	Conversation conversation;
+	AccountType accountType;
+	List<ChangeConfigurationRequest> declinedChangeConfigurationRequest;
+	List<ChangeConfigurationRequest> acceptedChangeConfigurationRequest;
 	Person person;
-	private int id;
+	List<Conversation> conversation;
+	private int ID;
 	private String login;
 	private Date createdDate;
 	private String email;
 	private String password;
+	private Date lastLoginDate;
+	private int lockout;
+	private Date lockoutDate;
 
 	public void changePassword() {
 		// TODO - implement Account.changePassword

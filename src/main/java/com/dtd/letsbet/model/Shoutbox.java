@@ -5,6 +5,7 @@ import java.util.*;
 public class Shoutbox {
 
 	Gameplay gameplay;
-	Collection<Post> posts;
+	List<Post> posts;
+	private int ID;
 
 }

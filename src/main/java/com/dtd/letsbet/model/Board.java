@@ -4,6 +4,7 @@ import java.util.*;
 
 public class Board {
 
-	Collection<BoardPost> boardPosts;
+	List<BoardPost> boardPosts;
+	private int ID;
 
 }

@@ -5,10 +5,11 @@ import java.util.Date;
 public class Notification {
 
 	Player player;
+	NotificationType notificationType;
+	private int ID;
 	private String message;
 	private boolean isRead;
 	private Date createdDate;
-	private int type;
 	private String value;
 
 }

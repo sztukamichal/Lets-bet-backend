@@ -5,9 +5,10 @@ import java.util.*;
 public class Competition {
 
 	LeagueTable leagueTable;
-	Collection<Team> teams;
-	Collection<Match> matchs;
-	private int id;
+	List<Team> teams;
+	List<Match> matches;
+	private int ID;
+	private int externalId;
 	private String caption;
 	private String leagueCode;
 	private int year;

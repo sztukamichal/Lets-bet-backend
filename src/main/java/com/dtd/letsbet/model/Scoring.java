@@ -6,6 +6,7 @@ package com.dtd.letsbet.model;
 public class Scoring {
 
 	GameplayConfiguration configuration;
+	private int ID;
 	private int pointsForExactScore = 3;
 	private int pointsForDraw = 2;
 	private int pointsForCorrectWinner = 1;

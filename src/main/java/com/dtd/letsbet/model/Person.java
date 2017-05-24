@@ -5,12 +5,13 @@ import java.util.Date;
 public class Person {
 
 	Account account;
-	private Gender gender;
+	Gender gender;
+	private int ID;
 	private String firstName;
 	private String lastName;
 	private Date birthday;
 	private String nationality;
-	private Team favouriteTeam;
+	private Integer favouriteTeam;
 
 	public void changeInformation() {
 		// TODO - implement Person.changeInformation

@@ -4,10 +4,11 @@ import java.util.Date;
 
 public abstract class Bet {
 
+	BetStatus betStatus;
 	Phase phase;
+	private int ID;
 	private String name;
 	private String description;
-	private BetStatus status;
 	private Date creationDate;
 	private Date updatedDate;
 

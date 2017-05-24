@@ -1,4 +1,4 @@
-package com.dtd.letsbet;
+package com.dtd.letsbet.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

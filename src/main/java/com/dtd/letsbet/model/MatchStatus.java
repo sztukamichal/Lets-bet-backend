@@ -1,10 +1,11 @@
 package com.dtd.letsbet.model;
 
-public enum MatchStatus {
-	SCHEDULED,
-	TIMED,
-	IN_PLAY,
-	FINISHED,
-	POSTPONED,
-	CANCELED
+import java.util.*;
+
+public class MatchStatus {
+
+	List<Match> match;
+	private int ID;
+	private String name;
+
 }

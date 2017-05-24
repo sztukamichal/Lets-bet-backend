@@ -1,7 +1,11 @@
 package com.dtd.letsbet.model;
 
-public enum InvitationStatus {
-	NEW,
-	ACCEPTED,
-	DENIED
+import java.util.*;
+
+public class InvitationStatus {
+
+	List<Invitation> invitation;
+	private int ID;
+	private String name;
+
 }

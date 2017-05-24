@@ -5,7 +5,8 @@ import java.util.*;
 public class Phase {
 
 	GameplayTemplate gameplayTemplate;
-	Collection<Bet> bets;
+	List<Bet> bet;
+	private int ID;
 	private String name;
 	private String description;
 	private int extraPoints;

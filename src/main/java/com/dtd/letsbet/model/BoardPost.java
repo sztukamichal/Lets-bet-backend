@@ -6,6 +6,7 @@ public class BoardPost {
 
 	Board board;
 	Moderator author;
+	private int ID;
 	private String message;
 	private Date createdDate;
 

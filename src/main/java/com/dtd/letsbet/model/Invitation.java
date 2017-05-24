@@ -8,8 +8,9 @@ import java.util.Date;
 public abstract class Invitation {
 
 	Player sender;
+	InvitationStatus invitationStatus;
 	Player receiver;
-	private InvitationStatus status;
+	private int ID;
 	private Date createdDate;
 	private Date resolvedDate;
 

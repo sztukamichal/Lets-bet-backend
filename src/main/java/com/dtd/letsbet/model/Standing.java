@@ -2,11 +2,12 @@ package com.dtd.letsbet.model;
 
 public class Standing {
 
-	Team teams;
+	Team team;
 	LeagueTable leagueTable;
+	private int ID;
 	private int rank;
-	private String team;
-	private int teamId;
+	private String teamName;
+	private int externalTeamId;
 	private int playedGames;
 	private String crestUrl;
 	private int points;
