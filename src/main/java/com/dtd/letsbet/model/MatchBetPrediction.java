@@ -1,5 +1,7 @@
 package com.dtd.letsbet.model;
 
+import com.dtd.letsbet.model.ExternalData.Result;
+
 import java.util.Date;
 
 public class MatchBetPrediction {

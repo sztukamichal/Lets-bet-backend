@@ -10,4 +10,5 @@ import java.util.List;
  */
 public interface BetStatusRepository extends CrudRepository<BetStatus, Long> {
     List<BetStatus> findByName(String name);
+    void deleteAll();
 }

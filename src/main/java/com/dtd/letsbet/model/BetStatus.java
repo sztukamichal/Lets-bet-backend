@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class BetStatus implements Serializable{
 
 	@Id
-	@SequenceGenerator(name="seq-gen",sequenceName="bet_id_seq", initialValue=2, allocationSize=12)
+	@SequenceGenerator(name="seq-gen",sequenceName="betstatus_id_seq", initialValue=2, allocationSize=12)
 	@GeneratedValue(strategy= GenerationType.SEQUENCE, generator="seq-gen")
 	private int ID;
 

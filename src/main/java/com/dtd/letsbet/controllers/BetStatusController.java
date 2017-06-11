@@ -32,4 +32,10 @@ public class BetStatusController {
         return result + "</html>";
     }
 
+    @RequestMapping("/delete")
+    public String deleteAll() {
+        betStatusRepository.deleteAll();
+        return "Deleted";
+    }
+
 }
