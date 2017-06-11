@@ -1,0 +1,10 @@
+
+
+--- Zmiana w strukturze bazy danych, zniknęła tabela teammatch, zmienilo sie powiazanie leaguetable z competition ---
+
+ALTER TABLE "public".match ADD COLUMN awayteamid int4 NOT NULL;
+ALTER TABLE "public".match ADD COLUMN hometeamid int4 NOT NULL;
+ALTER TABLE "public".match ADD CONSTRAINT fkmatch99431 FOREIGN KEY (awayteamid) REFERENCES "public".team (id);
+ALTER TABLE "public".match ADD CONSTRAINT fkcmatch99421 FOREIGN KEY (hometeamid) REFERENCES "public".team (id);
+ALTER TABLE "public".competition ADD COLUMN leaguetableid int4 NOT NULL;
+ALTER TABLE "public".competition ADD CONSTRAINT fkcompetitio99441 FOREIGN KEY (leaguetableid) REFERENCES "public".leaguetable (id);

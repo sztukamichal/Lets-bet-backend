@@ -27,7 +27,6 @@ public class CompetitionController {
 
     @RequestMapping("/test")
     public String process() {
-        // Stworzenie zawodnikow
         List<Footballer> footballersPoland = new ArrayList<>();
         footballersPoland.add(new Footballer(23,"Test1"));
         footballersPoland.add(new Footballer(21,"Test2"));
