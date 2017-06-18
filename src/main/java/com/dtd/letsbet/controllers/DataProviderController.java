@@ -1,4 +1,4 @@
-package com.dtd.letsbet.externDataProvider;
+package com.dtd.letsbet.controllers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +17,7 @@ import net.minidev.json.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -24,37 +25,47 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-public class DataProvider {
+@RequestMapping("/dataBaseProvider")
+public class DataProviderController {
     @Autowired
-    private CompetitionRepository competitionRepository;
+    CompetitionRepository competitionRepository;
     @Autowired
-    private MatchRepository matchRepository;
+    MatchRepository matchRepository;
     @Autowired
-    private LeagueTableRepository leagueTableRepository;
+    LeagueTableRepository leagueTableRepository;
     @Autowired
-    private TeamRepository teamRepository;
+    TeamRepository teamRepository;
     @Autowired
-    private FootballerRepository footballerRepository;
+    FootballerRepository footballerRepository;
 
     private Map<Integer, String> teamListUrl;
     private Map<Integer,String> leagueListUrl;
     private Map<Integer,String> fixtureListUrl;
+    private Map<Integer, String> footballerListUrl;
 
     private MultiValueMap<Integer, Team> teamList;
+    private MultiValueMap<Integer, Footballer> footballerList;
     private MultiValueMap<Integer, Competition> competitionList;
     private MultiValueMap<Integer, Match> matchList;
     private MultiValueMap<Integer, LeagueTable> leagueList;
-    private MultiValueMap<Integer, Footballer> footballerList;
 
     private static String competition = "http://api.football-data.org/v1/competitions/";
+
+    @RequestMapping("/launch")
+    public void saveToDatabase() {
+        getData();
+        deleteAll();
+        saveAll();
+    }
 
     enum sourceType{
         Competition(false, competition),
         Teams(true),
         Leagues(true),
-        Fixtures(true);
-
+        Fixtures(true),
+        Footballers(true);
         private final boolean isList;
+
         private final String uri;
 
         sourceType(final boolean isList, final String uri){
@@ -70,17 +81,19 @@ public class DataProvider {
         public boolean isList(){
             return isList;
         }
-
         @Override
         public String toString(){
             return uri;
         }
+
     }
 
-    public DataProvider(){
+
+    public DataProviderController(){
         teamListUrl = new HashMap<>();
         leagueListUrl = new HashMap<>();
         fixtureListUrl = new HashMap<>();
+        footballerListUrl = new HashMap<>();
         teamList = new LinkedMultiValueMap<>();
         competitionList = new LinkedMultiValueMap<>();
         matchList = new LinkedMultiValueMap<>();
@@ -88,10 +101,10 @@ public class DataProvider {
         footballerList = new LinkedMultiValueMap<>();
     }
 
-    public void getData(){
+    private void getData(){
         for(sourceType source : sourceType.values()) {
-            if(source.isList){
-                switch(source){
+            if (source.isList) {
+                switch (source) {
                     case Teams:
                         readFromList(source, teamListUrl);
                         break;
@@ -101,22 +114,17 @@ public class DataProvider {
                     case Fixtures:
                         readFromList(source, fixtureListUrl);
                         break;
+                    case Footballers:
+                        readFromList(source, footballerListUrl);
+                        break;
                 }
-            }
-            else{
+            } else {
                 Object json = getJSONObject(source.toString());
-                if(json != null){
+                if (json != null) {
                     undressJSON(source, json, null);
                 }
             }
         }
-        saveToDatabase();
-    }
-
-
-    private void saveToDatabase() {
-        deleteAll();
-        saveAll();
     }
 
     private void saveAll() {
@@ -124,6 +132,12 @@ public class DataProvider {
             for (Competition competition : competitionList.get(competitionId)) {
                 List<Team> teams = teamList.get(competitionId);
                 if(!teams.isEmpty()) {
+                    List<Footballer> footballers = new ArrayList<>();
+                    for (Team team : teams ) {
+                        if(footballerList.containsKey(team.getName().hashCode()))
+                            footballers = footballerList.get(team.getName().hashCode());
+                        team.setFootballers(footballers);
+                    }
                     teamRepository.save(teams);
                     competition.setTeams(teams);
                 }
@@ -156,8 +170,8 @@ public class DataProvider {
         competition.setLastUpdated(translateJsonDate((String) getJsonObjectElement(jsonObject, "lastUpdated")));
         competition.setCurrentMatchday((int) getJsonObjectElement(jsonObject, "currentMatchday"));
         competition.setNumberOfMatchdays((int) getJsonObjectElement(jsonObject, "numberOfMatchdays"));
-
-        competitionList.add(id, competition);
+        if(!competitionList.values().contains(competition))
+            competitionList.add(id, competition);
     }
 
     private void translateTeams(JSONObject jsonObject, Integer id){
@@ -167,7 +181,9 @@ public class DataProvider {
         team.setShortName((String) getJsonObjectElement(jsonObject, "shortName"));
         team.setSquadMarketValue((String) getJsonObjectElement(jsonObject, "squadMarketValue"));
         team.setCrestUrl((String) getJsonObjectElement(jsonObject, "crestUrl"));
-        teamList.add(id, team);
+        team.setExternalId(team.getName().hashCode());
+        if(!teamList.values().contains(team))
+            teamList.add(id, team);
     }
 
     private void translateLeagues(JSONObject jsonObject, Integer id, List<Standing> standingList){
@@ -178,7 +194,8 @@ public class DataProvider {
         for(Standing standing:standingList){
             standing.setLeagueTable(league);
         }
-        leagueList.add(id, league);
+        if(!leagueList.values().contains(league))
+            leagueList.add(id, league);
     }
 
     private Standing translateStandings(JSONObject jsonObject, Integer id) {
@@ -234,9 +251,22 @@ public class DataProvider {
         }
         result.setFinalResult(finalResult);
         match.setResult(result);
-        matchList.add(id, match);
+        if(!matchList.values().contains(match))
+            matchList.add(id, match);
     }
 
+
+    private void translateFootballers(JSONObject playerJSONObject, Integer id) {
+        Footballer footballer = new Footballer();
+        footballer.setName((String) getJsonObjectElement(playerJSONObject, "name"));
+        footballer.setPosition((String) getJsonObjectElement(playerJSONObject, "position"));
+        footballer.setJerseyNumber((int) getJsonObjectElement(playerJSONObject, "jerseyNumber"));
+        footballer.setDateOfBirth(translateJsonDate((String) getJsonObjectElement(playerJSONObject, "dateOfBirth")));
+        footballer.setNationality((String) getJsonObjectElement(playerJSONObject, "nationality"));
+        footballer.setContractUntil(translateJsonDate((String) getJsonObjectElement(playerJSONObject, "contractUntil")));
+        footballer.setMarketValue((String) getJsonObjectElement(playerJSONObject, "marketValue"));
+        footballerList.add(id, footballer);
+    }
 
     private void readFromList(sourceType source, Map<Integer, String> list) {
         for(Integer uri : list.keySet()){
@@ -277,6 +307,16 @@ public class DataProvider {
             case Fixtures:
                 saveFixtures(jsonObject, id);
                 break;
+            case Footballers:
+                saveFootballers(jsonObject, id);
+                break;
+        }
+    }
+
+    private void saveFootballers(JSONObject jsonObject, Integer id) {
+        JSONArray players = (JSONArray) getJsonObjectElement(jsonObject, "players");
+        for(Object playerJSONObject : ((JSONArray) players).toArray()){
+            translateFootballers((JSONObject)playerJSONObject, id);
         }
     }
 
@@ -289,8 +329,19 @@ public class DataProvider {
     private void saveTeams(JSONObject jsonObject, Integer id) {
         JSONArray teams = (JSONArray) getJsonObjectElement(jsonObject, "teams");
         for(Object teamJSONObject : ((JSONArray) teams).toArray()){
-            translateTeams(jsonObject, id);
+            fillListsFromTeams(getJsonObjectElement((JSONObject)teamJSONObject, "_links"), (String)getJsonObjectElement((JSONObject)teamJSONObject, "name"));
+            translateTeams((JSONObject)teamJSONObject, id);
         }
+    }
+
+    private void fillListsFromTeams(Object jsonLinks, String name) {
+        fillGenericList(footballerListUrl, "players", jsonLinks, name.hashCode());
+    }
+
+    private void fillListsFromCompetition(Object jsonLinks, Integer id) {
+        fillGenericList(teamListUrl, "teams", jsonLinks, id);
+        fillGenericList(leagueListUrl, "leagueTable", jsonLinks, id);
+        fillGenericList(fixtureListUrl, "fixtures", jsonLinks, id);
     }
 
     private void saveLeagues(JSONObject jsonObject, Integer id, List<Standing> standingList) {
@@ -308,13 +359,15 @@ public class DataProvider {
         }
     }
 
-    private void fillListsFromCompetition(Object jsonLinks, Integer id) {
-        fillGenericList(teamListUrl, "teams", jsonLinks, id);
-        fillGenericList(leagueListUrl, "leagueTable", jsonLinks, id);
-        fillGenericList(fixtureListUrl, "fixtures", jsonLinks, id);
+    private void fillGenericList(Map<Integer, String> listOfObjects, String name, Object jsonLinks, Integer id){
+        Object object = getJsonObjectElement(((JSONObject)jsonLinks), name);
+        String uri = (String) getJsonObjectElement(((JSONObject)object), "href");
+        if(!listOfObjects.containsKey(id)){
+            listOfObjects.put(id, uri);
+        }
     }
 
-    private void fillGenericList(Map<Integer, String> listOfObjects, String name, Object jsonLinks, Integer id){
+    private void fillGenericList(Map<String, String> listOfObjects, String name, Object jsonLinks, String id){
         Object object = getJsonObjectElement(((JSONObject)jsonLinks), name);
         String uri = (String) getJsonObjectElement(((JSONObject)object), "href");
         if(!listOfObjects.containsKey(id)){

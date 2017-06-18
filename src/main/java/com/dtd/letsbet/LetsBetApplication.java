@@ -1,6 +1,7 @@
 package com.dtd.letsbet;
 
 import com.dtd.letsbet.config.LetsBetConfiguration;
+import com.dtd.letsbet.controllers.DataProviderController;
 import org.apache.log4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
