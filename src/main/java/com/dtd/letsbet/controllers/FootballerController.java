@@ -15,7 +15,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/footballer")
-public class FootballerController {
+public class  FootballerController {
 
     @Autowired
     FootballerRepository footballerRepository;

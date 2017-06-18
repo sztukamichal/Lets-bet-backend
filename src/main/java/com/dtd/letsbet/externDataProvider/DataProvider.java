@@ -7,22 +7,41 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
+import com.dtd.letsbet.model.ExternalData.*;
+import com.dtd.letsbet.repositories.ExternalRepositories.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 /**
  * Created by Maciej on 04.06.2017.
  */
 public class DataProvider {
-    private List<String> teamList;
-    private List<String> leagueList;
-    private List<String> fixtureList;
+    @Autowired
+    private CompetitionRepository competitionRepository;
+    @Autowired
+    private MatchRepository matchRepository;
+    @Autowired
+    private LeagueTableRepository leagueTableRepository;
+    @Autowired
+    private TeamRepository teamRepository;
+    @Autowired
+    private FootballerRepository footballerRepository;
+
+    private Map<Integer, String> teamListUrl;
+    private Map<Integer,String> leagueListUrl;
+    private Map<Integer,String> fixtureListUrl;
+
+    private MultiValueMap<Integer, Team> teamList;
+    private MultiValueMap<Integer, Competition> competitionList;
+    private MultiValueMap<Integer, Match> matchList;
+    private MultiValueMap<Integer, LeagueTable> leagueList;
+    private MultiValueMap<Integer, Footballer> footballerList;
 
     private static String competition = "http://api.football-data.org/v1/competitions/";
 
@@ -35,12 +54,12 @@ public class DataProvider {
         private final boolean isList;
         private final String uri;
 
-        private sourceType(final boolean isList, final String uri){
+        sourceType(final boolean isList, final String uri){
             this.isList = isList;
             this.uri = uri;
         }
 
-        private sourceType(final boolean isList){
+        sourceType(final boolean isList){
             this.isList = isList;
             this.uri = "";
         }
@@ -56,9 +75,14 @@ public class DataProvider {
     }
 
     public DataProvider(){
-        teamList = new  ArrayList();
-        leagueList = new  ArrayList();
-        fixtureList = new  ArrayList();
+        teamListUrl = new HashMap<>();
+        leagueListUrl = new HashMap<>();
+        fixtureListUrl = new HashMap<>();
+        teamList = new LinkedMultiValueMap<>();
+        competitionList = new LinkedMultiValueMap<>();
+        matchList = new LinkedMultiValueMap<>();
+        leagueList = new LinkedMultiValueMap<>();
+        footballerList = new LinkedMultiValueMap<>();
     }
 
     public void getData(){
@@ -66,188 +90,237 @@ public class DataProvider {
             if(source.isList){
                 switch(source){
                     case Teams:
-                        readFromList(source, teamList);
+                        readFromList(source, teamListUrl);
                         break;
                     case Leagues:
-                        readFromList(source, leagueList);
+                        readFromList(source, leagueListUrl);
                         break;
                     case Fixtures:
-                        readFromList(source, fixtureList);
+                        readFromList(source, fixtureListUrl);
                         break;
                 }
             }
             else{
                 Object json = getJSONObject(source.toString());
                 if(json != null){
-                    undressJSON(source, json);
+                    undressJSON(source, json, null);
                 }
+            }
+        }
+        saveToDatabase();
+    }
+
+    private void saveToDatabase() {
+        teamRepository.deleteAll();
+        matchRepository.deleteAll();
+        competitionRepository.deleteAll();
+
+        for(Integer competitionId : competitionList.keySet()) {
+            for (Competition competition : competitionList.get(competitionId)) {
+                List<Team>  teams = teamList.get(competitionId);
+                teamRepository.save(teams);
+                competition.setTeams(teams);
+
+                List<Match> matches = matchList.get(competitionId);
+                matchRepository.save(matches);
+                competition.setMatches(matches);
+
+                competitionRepository.save(competition);
             }
         }
     }
 
-    private void translateCompetition(JSONObject jsonObject) {
-        int externalId = (int) getJsonObjectElement(jsonObject, "id");
-        String caption= (String) getJsonObjectElement(jsonObject, "caption");
-        String leagueCode= (String) getJsonObjectElement(jsonObject, "league");
-        String year = (String) getJsonObjectElement(jsonObject, "year");
-        int numberOfTeams= (int) getJsonObjectElement(jsonObject, "numberOfTeams");
-        int numberOfGames= (int) getJsonObjectElement(jsonObject, "numberOfGames");
-        Date lastUpdated= translateJsonDate((String) getJsonObjectElement(jsonObject, "lastUpdated"));
-        int currentMatchday= (int) getJsonObjectElement(jsonObject, "currentMatchday");
-        int numberOfMatchdays= (int) getJsonObjectElement(jsonObject, "numberOfMatchdays");
+    private void translateCompetition(JSONObject jsonObject, int id) {
+        Competition competition = new Competition();
+        competition.setExternalId((int) getJsonObjectElement(jsonObject, "id"));
+        competition.setCaption((String) getJsonObjectElement(jsonObject, "caption"));
+        competition.setLeagueCode((String) getJsonObjectElement(jsonObject, "league"));
+        competition.setYear(Integer.parseInt((String) getJsonObjectElement(jsonObject, "year")));
+        competition.setNumberOfTeams((int) getJsonObjectElement(jsonObject, "numberOfTeams"));
+        competition.setNumberOfGames((int) getJsonObjectElement(jsonObject, "numberOfGames"));
+        competition.setLastUpdated(translateJsonDate((String) getJsonObjectElement(jsonObject, "lastUpdated")));
+        competition.setCurrentMatchday((int) getJsonObjectElement(jsonObject, "currentMatchday"));
+        competition.setNumberOfMatchdays((int) getJsonObjectElement(jsonObject, "numberOfMatchdays"));
+
+        competitionList.add(id, competition);
     }
 
-    private void translateTeams(JSONObject jsonObject){
-        String name = (String) getJsonObjectElement(jsonObject, "name");
-        String code = (String) getJsonObjectElement(jsonObject, "code");
-        String shortName = (String) getJsonObjectElement(jsonObject, "shortName");
-        String squadMarketValue = (String) getJsonObjectElement(jsonObject, "squadMarketValue");
-        String crestUrl = (String) getJsonObjectElement(jsonObject, "crestUrl");
+    private void translateTeams(JSONObject jsonObject, Integer id){
+        Team team = new Team();
+        team.setName((String) getJsonObjectElement(jsonObject, "name"));
+        team.setCode((String) getJsonObjectElement(jsonObject, "code"));
+        team.setShortName((String) getJsonObjectElement(jsonObject, "shortName"));
+        team.setSquadMarketValue((String) getJsonObjectElement(jsonObject, "squadMarketValue"));
+        team.setCrestUrl((String) getJsonObjectElement(jsonObject, "crestUrl"));
+        teamList.add(id, team);
     }
 
-    private void translateLeagues(JSONObject jsonObject){
-        String leagueCaption = (String) getJsonObjectElement(jsonObject, "leagueCaption");
-        int matchday = (int) getJsonObjectElement(jsonObject, "matchday");
+    private void translateLeagues(JSONObject jsonObject, Integer id, List<Standing> standingList){
+        LeagueTable league = new LeagueTable();
+        league.setLeagueCaption((String) getJsonObjectElement(jsonObject, "leagueCaption"));
+        league.setMatchDay((int) getJsonObjectElement(jsonObject, "matchday"));
+        league.setStandings(standingList);
+        for(Standing standing:standingList){
+            standing.setLeagueTable(league);
+        }
+        leagueList.add(id, league);
     }
 
-    private void translateStandings(JSONObject jsonObject) {
-        int teamId = (int) getJsonObjectElement(jsonObject, "teamId");
-        int playedGames = (int) getJsonObjectElement(jsonObject, "playedGames");
-        String team = (String) getJsonObjectElement(jsonObject, "team");
-        int rank = (int) getJsonObjectElement(jsonObject, "rank");
-        String crestUrl = (String) getJsonObjectElement(jsonObject, "crestUrl");
-        int goalsAgainst = (int) getJsonObjectElement(jsonObject, "goalsAgainst");
-        int goalDifference = (int) getJsonObjectElement(jsonObject, "goalDifference");
-        String group = (String) getJsonObjectElement(jsonObject, "group");
-        int points = (int) getJsonObjectElement(jsonObject, "points");
-        int goals = (int) getJsonObjectElement(jsonObject, "goals");
+    private Standing translateStandings(JSONObject jsonObject, Integer id) {
+        String teamName =  (String) getJsonObjectElement(jsonObject, "team");
+        Standing standing = new Standing();
+        standing.setPlayedGames ((int) getJsonObjectElement(jsonObject, "playedGames"));
+        standing.setTeamName (teamName);
+        standing.setRank ((int) getJsonObjectElement(jsonObject, "rank"));
+        standing.setCrestUrl ((String) getJsonObjectElement(jsonObject, "crestUrl"));
+        standing.setGoalsAgainst ((int) getJsonObjectElement(jsonObject, "goalsAgainst"));
+        standing.setGoalDifference ( (int) getJsonObjectElement(jsonObject, "goalDifference"));
+        standing.setPoints ((int) getJsonObjectElement(jsonObject, "points"));
+        standing.setGoals ((int) getJsonObjectElement(jsonObject, "goals"));
+        if(teamList.containsKey(id)){
+            List<Team> teamListTemp = teamList.get(id);
+            for(Team team : teamListTemp)
+                if (team.getName() == teamName) {
+                    standing.setTeam(team);
+                    break;
+                }
+        }
+        return standing;
     }
 
-    private void translateFixtures(JSONObject jsonObject) {
-        Date date = translateJsonDate((String) getJsonObjectElement(jsonObject, "date"));
-        int matchday = (int) getJsonObjectElement(jsonObject, "matchday");
-        String awayTeamName = (String) getJsonObjectElement(jsonObject, "awayTeamName");
-        String homeTeamName = (String) getJsonObjectElement(jsonObject, "homeTeamName");
-        String status = (String) getJsonObjectElement(jsonObject, "status");
+    private void translateFixtures(JSONObject jsonObject, Integer id){
+        Match match = new Match();
+        match.setDate(translateJsonDate((String) getJsonObjectElement(jsonObject, "date")));
+        match.setMatchday ((int) getJsonObjectElement(jsonObject, "matchday"));
+        match.setAwayTeamName((String) getJsonObjectElement(jsonObject, "awayTeamName"));
+        match.setHomeTeamName((String) getJsonObjectElement(jsonObject, "homeTeamName"));
+        match.setMatchStatus(new MatchStatus((String) getJsonObjectElement(jsonObject, "status")));
 
         JSONObject oddsJSON = (JSONObject) getJsonObjectElement(jsonObject, "odds");
         if(oddsJSON != null){
-            double awayWin = (double) getJsonObjectElement(oddsJSON, "awayWin");
+            double away = (double) getJsonObjectElement(oddsJSON, "awayWin");
             double draw = (double) getJsonObjectElement(oddsJSON, "draw");
             double homeWin = (double) getJsonObjectElement(oddsJSON, "homeWin");
         }
 
+        Result result = new Result();
+        PartialResult finalResult = new PartialResult();
         JSONObject resultJSON = (JSONObject) getJsonObjectElement(jsonObject, "result");
         if(resultJSON != null){
             Object goalsHomeTeamObject = getJsonObjectElement(resultJSON, "goalsHomeTeam");
             if(goalsHomeTeamObject != null){
-                int goalsHomeTeam = (int) goalsHomeTeamObject;
+                finalResult.setGoalsHomeTeam((int) goalsHomeTeamObject);
             }
 
             Object goalsAwayTeamObject = getJsonObjectElement(resultJSON, "goalsAwayTeam");
             if(goalsAwayTeamObject != null){
-                int goalsAwayTeam = (int) goalsHomeTeamObject;
+                finalResult.setGoalsAwayTeam((int) goalsAwayTeamObject);
             }
         }
+        result.setFinalResult(finalResult);
+        match.setResult(result);
+        matchList.add(id, match);
     }
 
 
-    private void readFromList(sourceType source, List<String> list) {
-        for(String uri : list){
-            Object json = getJSONObject(uri);
+    private void readFromList(sourceType source, Map<Integer, String> list) {
+        for(Integer uri : list.keySet()){
+            Object json = getJSONObject(list.get(uri));
             if(json != null){
-                undressJSON(source, json);
+                undressJSON(source, json, uri);
             }
         }
     }
 
-    private void undressJSON(sourceType source, Object json) {
+    private void undressJSON(sourceType source, Object json, Integer id) {
         if(json instanceof JSONObject ){
-            saveToDatabase(source, (JSONObject)json);
+            prepareToDatabase(source, (JSONObject)json, id);
         }
         else if(json instanceof JSONArray){
             for(Object probableJSONObject : ((JSONArray) json).toArray()){
                 if(probableJSONObject instanceof JSONObject ){
-                    saveToDatabase(source, (JSONObject)probableJSONObject);
+                    prepareToDatabase(source, (JSONObject)probableJSONObject, id);
                 }
                 else if(probableJSONObject instanceof JSONArray){
-                    undressJSON(source, probableJSONObject);
+                    undressJSON(source, probableJSONObject, id);
                 }
             }
         }
     }
 
-    private void saveToDatabase(sourceType source, JSONObject jsonObject){
+    private void prepareToDatabase(sourceType source, JSONObject jsonObject, Integer id){
         switch(source){
             case Competition:
                 saveCompetition(jsonObject);
                 break;
             case Teams:
-                saveTeams(jsonObject);
+                saveTeams(jsonObject, id);
                 break;
             case Leagues:
-                saveLeagues(jsonObject);
-                saveStandings(jsonObject);
+                saveLeagues(jsonObject, id, saveStandings(jsonObject, id));
                 break;
             case Fixtures:
-                saveFixtures(jsonObject);
+                saveFixtures(jsonObject, id);
                 break;
         }
     }
 
     private void saveCompetition(JSONObject jsonObject) {
-        fillListsFromCompetition(getJsonObjectElement(jsonObject, "_links"));
-        translateCompetition(jsonObject);
+        int externalId = (int) getJsonObjectElement(jsonObject, "id");
+        fillListsFromCompetition(getJsonObjectElement(jsonObject, "_links"), externalId);
+        translateCompetition(jsonObject, externalId);
     }
 
-    private void saveTeams(JSONObject jsonObject) {
+    private void saveTeams(JSONObject jsonObject, Integer id) {
         JSONArray teams = (JSONArray) getJsonObjectElement(jsonObject, "teams");
         for(Object teamJSONObject : ((JSONArray) teams).toArray()){
-            translateTeams(jsonObject);
+            translateTeams(jsonObject, id);
         }
     }
 
-    private void saveLeagues(JSONObject jsonObject) {
-        translateLeagues(jsonObject);
+    private void saveLeagues(JSONObject jsonObject, Integer id, List<Standing> standingList) {
+        translateLeagues(jsonObject, id, standingList);
     }
 
-    private void saveStandings(JSONObject jsonObject) {
-        getStandings(jsonObject);
+    private List<Standing> saveStandings(JSONObject jsonObject, Integer id) {
+        return getStandings(jsonObject, id);
     }
 
-    private void saveFixtures(JSONObject jsonObject) {
+    private void saveFixtures(JSONObject jsonObject, Integer id) {
         JSONArray fixtures = (JSONArray) getJsonObjectElement(jsonObject, "fixtures");
         for(Object fixturesJSONObject : ((JSONArray) fixtures).toArray()){
-            translateFixtures((JSONObject)fixturesJSONObject);
+            translateFixtures((JSONObject)fixturesJSONObject, id);
         }
     }
 
-    private void fillListsFromCompetition(Object jsonLinks) {
-        fillGenericList(teamList, "teams", jsonLinks);
-        fillGenericList(leagueList, "leagueTable", jsonLinks);
-        fillGenericList(fixtureList, "fixtures", jsonLinks);
+    private void fillListsFromCompetition(Object jsonLinks, Integer id) {
+        fillGenericList(teamListUrl, "teams", jsonLinks, id);
+        fillGenericList(leagueListUrl, "leagueTable", jsonLinks, id);
+        fillGenericList(fixtureListUrl, "fixtures", jsonLinks, id);
     }
 
-    private void fillGenericList(List<String> listOfObjects, String name, Object jsonLinks){
+    private void fillGenericList(Map<Integer, String> listOfObjects, String name, Object jsonLinks, Integer id){
         Object object = getJsonObjectElement(((JSONObject)jsonLinks), name);
         String uri = (String) getJsonObjectElement(((JSONObject)object), "href");
-        if(!listOfObjects.contains(uri)){
-            listOfObjects.add(uri);
+        if(!listOfObjects.containsKey(id)){
+            listOfObjects.put(id, uri);
         }
     }
 
 
-    private void getStandings(JSONObject jsonObject) {
+    private List<Standing> getStandings(JSONObject jsonObject, Integer id) {
         JSONObject standingsGroup = (JSONObject) getJsonObjectElement(jsonObject, "standings");
+        List<Standing> standingList = new ArrayList<>();
         if(standingsGroup != null){
             for(String key : standingsGroup.keySet()){
                 JSONArray standings = (JSONArray)standingsGroup.get(key);
                 for(Object standing : standings){
                     JSONObject standingJSON = (JSONObject)standing;
-                    translateStandings(standingJSON);
+                    standingList.add(translateStandings(standingJSON, id));
                 }
             }
         }
+        return standingList;
     }
 
     private Object getJSONObject(String uri){
