@@ -17,10 +17,13 @@ import net.minidev.json.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Created by Maciej on 04.06.2017.
  */
+
+@RestController
 public class DataProvider {
     @Autowired
     private CompetitionRepository competitionRepository;
@@ -110,24 +113,36 @@ public class DataProvider {
         saveToDatabase();
     }
 
+
     private void saveToDatabase() {
+        deleteAll();
+        saveAll();
+    }
+
+    private void saveAll() {
+        for(Integer competitionId : competitionList.keySet()) {
+            for (Competition competition : competitionList.get(competitionId)) {
+                List<Team> teams = teamList.get(competitionId);
+                if(!teams.isEmpty()) {
+                    teamRepository.save(teams);
+                    competition.setTeams(teams);
+                }
+                List<Match> matches = matchList.get(competitionId);
+                if(!matches.isEmpty()) {
+                    matchRepository.save(matches);
+                    competition.setMatches(matches);
+                }
+                competitionRepository.save(competition);
+                leagueTableRepository.save(leagueList.get(competitionId));
+            }
+        }
+    }
+
+    private void deleteAll() {
         teamRepository.deleteAll();
         matchRepository.deleteAll();
         competitionRepository.deleteAll();
-
-        for(Integer competitionId : competitionList.keySet()) {
-            for (Competition competition : competitionList.get(competitionId)) {
-                List<Team>  teams = teamList.get(competitionId);
-                teamRepository.save(teams);
-                competition.setTeams(teams);
-
-                List<Match> matches = matchList.get(competitionId);
-                matchRepository.save(matches);
-                competition.setMatches(matches);
-
-                competitionRepository.save(competition);
-            }
-        }
+        leagueTableRepository.deleteAll();
     }
 
     private void translateCompetition(JSONObject jsonObject, int id) {
