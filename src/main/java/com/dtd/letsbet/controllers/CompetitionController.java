@@ -83,6 +83,8 @@ public class CompetitionController {
     @RequestMapping("/delete")
     public String deleteAll() {
         leagueTableRepository.deleteAll();
+        DataProviderController dp = new DataProviderController();
+        dp.getData();
         return "Deleted";
     }
 
