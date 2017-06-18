@@ -24,7 +24,7 @@ public class PlayerStatus {
 	}
 
 	@Id
-	@SequenceGenerator(name="seq-gen",sequenceName="accounttype_id_seq", allocationSize=12)
+	@SequenceGenerator(name="seq-gen",sequenceName="playerstatus_id_seq", allocationSize=12)
 	@GeneratedValue(strategy= GenerationType.SEQUENCE, generator="seq-gen")
 	public int getID() {
 		return ID;
@@ -52,7 +52,4 @@ public class PlayerStatus {
 	public void setAccounts(List<Account> accounts) {
 		this.accounts = accounts;
 	}
-
-
-
 }

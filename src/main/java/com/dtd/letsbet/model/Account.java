@@ -2,11 +2,11 @@ package com.dtd.letsbet.model;
 
 import java.util.Date;
 
-		import com.dtd.letsbet.model.AccountType;
-		import com.dtd.letsbet.model.PlayerStatus;
+import com.dtd.letsbet.model.AccountType;
+import com.dtd.letsbet.model.PlayerStatus;
 
-		import javax.persistence.*;
-		import java.util.Date;
+import javax.persistence.*;
+import java.util.Date;
 
 
 @Entity
@@ -20,7 +20,7 @@ public class Account {
 
 	private int ID;
 	private AccountType accountType;
-	private PlayerStatus playerstatus;
+	private PlayerStatus playerStatus;
 	private String login;
 	private Date createddate;
 	private String email;
@@ -55,13 +55,13 @@ public class Account {
 
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name="playerstatusid")
-	public PlayerStatus getPlayerstatus() {
-		return playerstatus;
+	@JoinColumn(name="playerstatusid", insertable = false, updatable = false)
+	public PlayerStatus getPlayerStatus() {
+		return playerStatus;
 	}
 
-	public void setPlayerstatus(PlayerStatus playerstatus) {
-		this.playerstatus = playerstatus;
+	public void setPlayerStatus(PlayerStatus playerStatus) {
+		this.playerStatus = playerStatus;
 	}
 
 	@Column(name = "login")
